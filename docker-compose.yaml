@@ -1,42 +1,28 @@
+version: "3.9"
+
 services:
   web:
-    build:
-      context: .
-      dockerfile: ./.docker/web/Dockerfile
-    volumes:
-      - ./www:/var/www/html
-      - ./vendor:/var/www/vendor
+    image: php:8.2-apache
+    container_name: webshop_php
     ports:
-      - "80:80"
+      - "8080:80"
+    volumes:
+      - ./web:/var/www/html
     depends_on:
       - mariadb
+    restart: unless-stopped
+
   mariadb:
-    image: mariadb:10.4
+    image: mariadb:11
+    container_name: webshop_db
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: webshop
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - dbdata:/var/lib/mysql
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-  phpmyadmin:
-    image: phpmyadmin
-    ports:
-      - 8000:80
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOST=mariadb
-    depends_on:
-      - mariadb
-    volumes:
-      - ./.docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
 volumes:
-  dbdata:
+  db_data:
